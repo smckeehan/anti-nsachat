@@ -3,6 +3,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+
+/*
+ * The Client with its GUI
+ */
 public class ClientGUI extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
@@ -19,7 +23,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 	// if it is for connection
 	private boolean connected;
 	// the Client object
-	private Client client;
+	//private Client client;
 	// the default port number
 	private int defaultPort;
 	private String defaultHost;
@@ -117,19 +121,19 @@ public class ClientGUI extends JFrame implements ActionListener {
 		Object o = e.getSource();
 		// if it is the Logout button
 		if(o == logout) {
-			client.sendMessage("");
+			//client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, ""));
 			return;
 		}
 		// if it the who is in button
 		if(o == whoIsIn) {
-			client.sendMessage("");				
+			//client.sendMessage(new ChatMessage(ChatMessage.WHOISIN, ""));				
 			return;
 		}
 
 		// ok it is coming from the JTextField
 		if(connected) {
 			// just have to send the message
-			client.sendMessage("");				
+			//client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, tf.getText()));				
 			tf.setText("");
 			return;
 		}
@@ -160,8 +164,8 @@ public class ClientGUI extends JFrame implements ActionListener {
 			// try creating a new Client with GUI
 			//client = new Client(server, port, username, this);
 			// test if we can start the Client
-			if(!client.start()) 
-				return;
+			//if(!client.start()) 
+				//return;
 			tf.setText("");
 			label.setText("Enter your message below");
 			connected = true;
