@@ -49,19 +49,23 @@ public class ClientGUI extends JFrame implements ActionListener {
 		northPanel.add(serverAndPort);
 
 		// the Label and the TextField
-		tf = new JTextField("Enter your username...");
+		label = new JLabel("Enter your username below", SwingConstants.CENTER);
+		northPanel.add(label);
+		tf = new JTextField("Anonymous");
 		tf.setBackground(Color.WHITE);
 		northPanel.add(tf);
 		add(northPanel, BorderLayout.NORTH);
 		
 		// the Label and the TextField
-		tf = new JTextField("Enter recipient username...");
+		label = new JLabel("Enter recipient username below", SwingConstants.CENTER);
+		northPanel.add(label);
+		tf = new JTextField("Anonymous");
 		tf.setBackground(Color.WHITE);
 		northPanel.add(tf);
 		add(northPanel, BorderLayout.NORTH);
 
 		// The CenterPanel which is the chat room
-		ta = new JTextArea("Welcome to Anti-NSA Chat. Enter server and login details to get started!\n", 80, 80);
+		ta = new JTextArea("Welcome to the Chat room\n", 80, 80);
 		JPanel centerPanel = new JPanel(new GridLayout(1,1));
 		centerPanel.add(new JScrollPane(ta));
 		ta.setEditable(false);
