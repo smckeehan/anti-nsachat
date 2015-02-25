@@ -2,7 +2,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-
 public class ClientGUI extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
@@ -187,6 +186,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 	// to start the whole thing the server
 	public static void main(String[] args) {
 		new ClientGUI("localhost", 1500);
+		System.out.println("GIT TEST--ANDREW");
 	}
 
 }
