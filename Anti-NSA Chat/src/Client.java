@@ -6,6 +6,6 @@ public class Client {
 	}
 	
 	void sendMessage(String msg) {
-		
+		System.out.println("This is a test print, enjoy it.");
 	}
 }
