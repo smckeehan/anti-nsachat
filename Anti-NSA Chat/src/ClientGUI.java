@@ -12,7 +12,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 	// to hold the server address an the port number
 	private JTextField tfServer, tfPort;
 	// to Logout and get the list of the users
-	private JButton login, logout, whoIsIn;
+	private JButton login, logout;
 	// for the chat room
 	private JTextArea ta;
 	// if it is for connection
@@ -33,7 +33,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		// The NorthPanel with:
 		JPanel northPanel = new JPanel(new GridLayout(3,1));
 		// the server name and the port number
-		JPanel serverAndPort = new JPanel(new GridLayout(1,5, 1, 3));
+		JPanel serverAndPort = new JPanel(new GridLayout(1, 4, 1, 3));
 		// the two JTextField with default value for server address and port number
 		tfServer = new JTextField(host);
 		tfPort = new JTextField("" + port);
@@ -43,24 +43,34 @@ public class ClientGUI extends JFrame implements ActionListener {
 		serverAndPort.add(tfServer);
 		serverAndPort.add(new JLabel("Port Number:  "));
 		serverAndPort.add(tfPort);
-		serverAndPort.add(new JLabel(""));
 		// adds the Server an port field to the GUI
 		northPanel.add(serverAndPort);
 
 		// the Label and the TextField
+		JPanel usernames = new JPanel (new GridLayout(1, 2, 1, 3));
 		tf = new JTextField("Enter your username...");
 		tf.setBackground(Color.WHITE);
-		northPanel.add(tf);
-		add(northPanel, BorderLayout.NORTH);
-		
-		// the Label and the TextField
+		usernames.add(tf);
 		tf = new JTextField("Enter recipient username...");
 		tf.setBackground(Color.WHITE);
-		northPanel.add(tf);
+		usernames.add(tf);
+		northPanel.add(usernames);
 		add(northPanel, BorderLayout.NORTH);
+		
+		//Fields for the key, both public and private
+		JPanel keys = new JPanel (new GridLayout(1, 6, 1, 3));
+		keys.add(new JLabel("Public n:"));
+		keys.add(new JTextField(""));
+		keys.add(new JLabel("Public e:"));
+		keys.add(new JTextField(""));
+		keys.add(new JLabel("Private d:"));
+		keys.add(new JTextField(""));
+		northPanel.add(keys);
+		add(northPanel, BorderLayout.NORTH);
+	
 
 		// The CenterPanel which is the chat room
-		ta = new JTextArea("Welcome to Anti-NSA Chat. Enter server and login details to get started!\n", 80, 80);
+		ta = new JTextArea("Welcome to Anti-NSA Chat. Enter server and login details to get started!\n", 10, 10);
 		JPanel centerPanel = new JPanel(new GridLayout(1,1));
 		centerPanel.add(new JScrollPane(ta));
 		ta.setEditable(false);
@@ -72,14 +82,10 @@ public class ClientGUI extends JFrame implements ActionListener {
 		logout = new JButton("Logout");
 		logout.addActionListener(this);
 		logout.setEnabled(false);		// you have to login before being able to logout
-		whoIsIn = new JButton("Who is in");
-		whoIsIn.addActionListener(this);
-		whoIsIn.setEnabled(false);		// you have to login before being able to Who is in
 
 		JPanel southPanel = new JPanel();
 		southPanel.add(login);
 		southPanel.add(logout);
-		southPanel.add(whoIsIn);
 		add(southPanel, BorderLayout.SOUTH);
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -99,7 +105,6 @@ public class ClientGUI extends JFrame implements ActionListener {
 	void connectionFailed() {
 		login.setEnabled(true);
 		logout.setEnabled(false);
-		whoIsIn.setEnabled(false);
 		label.setText("Enter your username below");
 		tf.setText("Anonymous");
 		// reset port number and host name as a construction time
@@ -121,11 +126,6 @@ public class ClientGUI extends JFrame implements ActionListener {
 		// if it is the Logout button
 		if(o == logout) {
 			client.sendMessage("");
-			return;
-		}
-		// if it the who is in button
-		if(o == whoIsIn) {
-			client.sendMessage("");				
 			return;
 		}
 
@@ -171,9 +171,8 @@ public class ClientGUI extends JFrame implements ActionListener {
 			
 			// disable login button
 			login.setEnabled(false);
-			// enable the 2 buttons
+			// enable the logout button
 			logout.setEnabled(true);
-			whoIsIn.setEnabled(true);
 			// disable the Server and Port JTextField
 			tfServer.setEditable(false);
 			tfPort.setEditable(false);
