@@ -76,7 +76,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		ta.setEditable(false);
 		add(centerPanel, BorderLayout.CENTER);
 
-		// the 3 buttons
+		// the 2 buttons
 		login = new JButton("Login");
 		login.addActionListener(this);
 		logout = new JButton("Logout");
