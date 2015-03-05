@@ -1,4 +1,7 @@
 import javax.swing.*;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -56,10 +59,10 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 		// the Label and the TextField
 		JPanel usernames = new JPanel (new GridLayout(1, 2, 1, 3));
-		user = new JTextField("Enter your username...");
+		user = new AutoClearTF("Enter your username...");
 		user.setBackground(Color.WHITE);
 		usernames.add(user);
-		recipient = new JTextField("Enter recipient username...");
+		recipient = new AutoClearTF("Enter recipient username...");
 		recipient.setBackground(Color.WHITE);
 		usernames.add(recipient);
 		northPanel.add(usernames);
@@ -211,6 +214,70 @@ public class ClientGUI extends JFrame implements ActionListener {
 	public static void main(String[] args) {
 		new ClientGUI("localhost", 1500);
 	}
+	
+	/**
+	 * Textfield that clears when clicked into and reverts to initial text
+	 * if it is empty when it loses focus. Functionally the same as JTextField besides
+	 * auto clearing.
+	 * 
+	 * @see JTextField
+	 * @see FocusListener
+	 * 
+	 **/
+	class AutoClearTF extends JTextField{
+		public AutoClearTF(){
+			this(null,null,0);
+		}
+		public AutoClearTF(String text){
+			this(null,text,0);
+		}
+		public AutoClearTF(int columns){
+			this(null, null, columns);
+		}
+		public AutoClearTF(String text, int columns){
+			this(null, text, columns);
+		}
+		public AutoClearTF(Document doc, String text, int columns){
+			//Constructs with JTextField constructor and adds the focus listener/sets the text color
+			super(doc,text,columns);
+			addFocusListener(new AutoClearTextListener(this,new Color(120,120,120), new Color(0,0,0)));
+			setForeground(new Color(120,120,120));
+		}
+	}
+
+	/**
+	 * Implementation of a focus listener that changes a JTextComponent's color
+	 * and text on focus gain/lost depending on if text was entered.
+	 **/
+	class AutoClearTextListener implements FocusListener{
+		JTextComponent tc;
+		String initialText;
+		Color initialColor;
+		Color onFocusColor;
+		
+		public AutoClearTextListener(JTextComponent tc, Color initialColor, Color onFocusColor){
+			this.tc = tc;
+			initialText = tc.getText();
+			this.initialColor = initialColor;
+			tc.setForeground(initialColor);
+			this.onFocusColor = onFocusColor;
+		}
+		
+		@Override
+		public void focusGained(FocusEvent e) {
+			if(tc.getText().equals(initialText)){
+				tc.setText("");
+				tc.setForeground(onFocusColor);
+			}
+		}
+
+		@Override
+		public void focusLost(FocusEvent e) {
+			if(tc.getText().equals("")){
+				tc.setText(initialText);
+				tc.setForeground(initialColor);
+			}
+		}
+	}
 
 }
-
