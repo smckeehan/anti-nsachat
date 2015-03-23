@@ -3,17 +3,12 @@
 
 #### Table of Contents
 
-[About Project](#about-project)
-
-[Installation](#installation)
-
-[Server Usage](#server-usage)
-
-[Client Usage](#client-usage)
-
-[License](#license)
-
-[References](#references)
+[About Project](#about-project) 
+[Installation](#installation) 
+[Server Usage](#server-usage) 
+[Client Usage](#client-usage) 
+[License](#license) 
+[References](#references) 
 
 
 #### About Project
