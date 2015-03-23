@@ -197,7 +197,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		
 		//if hit the logout button
 		if (o == login && loggedIn) {
-			client.sendMessage("");
+			//client.sendMessage("");
 			return;
 		}
 		
