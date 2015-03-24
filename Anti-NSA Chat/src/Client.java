@@ -52,7 +52,7 @@ public class Client {
 	}
 	public static void main(String args[]){
 		try{
-			Client client = new Client("127.0.0.1","TestClient");
+			Client client = new Client("127.0.0.1","TestClient2");
 			BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
 			String inputLine;
 			while((inputLine = sysin.readLine())!=null){
