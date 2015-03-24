@@ -24,8 +24,25 @@ public class Client {
         in = new ObjectInputStream(socket.getInputStream());
         out.writeObject(new ClientHeader(null,this.username));
 	}
+	
 	public boolean start() {
-		return false;
+		return true;
+	}
+	
+	String sendMessage(String message, String recipient, Key key) {
+		RSAEncryption encryption = new RSAEncryption();
+		RSADecryption decryption = new RSADecryption();
+		
+		String time = new SimpleDateFormat("MM.dd.HH.mm.ss").format(new Date());
+		message = encryption.encrypt(message, key);
+		try {
+			out.writeObject(new ChatMessage(time, username, message, recipient));
+		} catch (IOException e) {
+			System.out.println("Whoops?");
+		}
+		
+		
+		return decryption.decrypt(message, key);
 	}
 	
 	void sendMessage(String message, String recipient) throws IOException {
@@ -52,7 +69,7 @@ public class Client {
 	}
 	public static void main(String args[]){
 		try{
-			Client client = new Client("127.0.0.1","TestClient2");
+			Client client = new Client("127.0.0.1","TestClient");
 			BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
 			String inputLine;
 			while((inputLine = sysin.readLine())!=null){

@@ -4,6 +4,8 @@ import javax.swing.text.JTextComponent;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.net.UnknownHostException;
 
 public class ClientGUI extends JFrame implements ActionListener {
 
@@ -14,6 +16,8 @@ public class ClientGUI extends JFrame implements ActionListener {
 	private JTextField user;
 	//to hold the recipient username
 	private JTextField recipient;
+	//key value fields
+	private JTextField kn, ke, kd;
 	//textfield for message input
 	private JTextField message;
 	//send button
@@ -40,7 +44,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		super("Chat Client");
 		defaultPort = port;
 		defaultHost = host;
-		
+
 		// The NorthPanel with:
 		JPanel northPanel = new JPanel(new GridLayout(3,1));
 		// the server name and the port number
@@ -67,18 +71,21 @@ public class ClientGUI extends JFrame implements ActionListener {
 		usernames.add(recipient);
 		northPanel.add(usernames);
 		add(northPanel, BorderLayout.NORTH);
-		
+
 		//Fields for the key, both public and private
 		JPanel keys = new JPanel (new GridLayout(1, 6, 1, 3));
 		keys.add(new JLabel("Public n:"));
-		keys.add(new JTextField(""));
+		kn = new JTextField("");
+		keys.add(kn);
 		keys.add(new JLabel("Public e:"));
-		keys.add(new JTextField(""));
+		ke = new JTextField("");
+		keys.add(ke);
 		keys.add(new JLabel("Private d:"));
-		keys.add(new JTextField(""));
+		kd = new JTextField("");
+		keys.add(kd);
 		northPanel.add(keys);
 		add(northPanel, BorderLayout.NORTH);
-	
+
 
 		// The CenterPanel which is the chat room
 		ta = new JTextArea("Welcome to Anti-NSA Chat. Enter server and login details to get started!\n", 10, 10);
@@ -89,11 +96,10 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 		//the message sending area
 		message = new JTextField("", 30);
-		message.addActionListener(this);
 		send = new JButton("Send");
 		send.addActionListener(this);
-		send.setEnabled(true); //Not enabled until logged in
-		
+		send.setEnabled(false); //Not enabled until logged in
+
 		// the 2 buttons
 		login = new JButton("Login");
 		login.addActionListener(this);
@@ -135,24 +141,35 @@ public class ClientGUI extends JFrame implements ActionListener {
 		user.removeActionListener(this);
 		connected = false;
 	}
-		
+
 	/*
-	* Button or JTextField clicked
-	*/
+	 * Button or JTextField clicked
+	 */
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
 
 		// ok it is coming from the JTextField
-		if(o == message) {
-			// just have to send the message
-			//client.sendMessage("");
+		if(o == message || o == send) {
+			//get the message, username, and recipient name
 			String text = message.getText();
 			String username = user.getText().trim();
+			String recName = recipient.getText().trim();
+
+			//get key values
+			Key key = new Key();
+			key.setN(kn.getText());
+			key.setE(ke.getText());
+			key.setD(kd.getText());
+
+			//send message
+			text = client.sendMessage(text, recName, key);
+
+			//put the returned message in the chat field and clear message box
 			ta.append(username + ": " + text + "\n");
 			message.setText("");
 			return;
 		}
-		
+
 		//if hit the login button
 		if(o == login && !loggedIn) {
 			// ok it is a connection request
@@ -168,44 +185,46 @@ public class ClientGUI extends JFrame implements ActionListener {
 			String portNumber = tfPort.getText().trim();
 			if(portNumber.length() == 0)
 				return;
-			int port = 0;
-			try {
-				port = Integer.parseInt(portNumber);
-			}
-			catch(Exception en) {
-				return;   // nothing I can do if port number is not valid
-			}
+			//			int port = 0;
+			//			try {
+			//				port = Integer.parseInt(portNumber);
+			//			}
+			//			catch(Exception en) {
+			//				return;   // nothing I can do if port number is not valid
+			//			}
 
 			// try creating a new Client with GUI
-			//client = new Client(server, port, username, this);
+			try {
+				client = new Client(server, username);
+			} catch (UnknownHostException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				System.out.println("Interesting...");
+			}
+			
 			// test if we can start the Client
 			if(!client.start()) 
 				return;
 			connected = true;
-			
+
 			// change login button to logout button
 			login.setText("Logout");
 			loggedIn = true;
-			
-			
+
+
 			// disable the Server and Port JTextField
 			tfServer.setEditable(false);
 			tfPort.setEditable(false);
 			// Action listener for when the user enter a message
 			message.addActionListener(this);
+			send.setEnabled(true);
 		}
-		
+
 		//if hit the logout button
 		if (o == login && loggedIn) {
 			//client.sendMessage("");
 			return;
-		}
-		
-		if (o == send) {
-			String text = message.getText();
-			String username = user.getText().trim();
-			ta.append(username + ": " + text + "\n");
-			message.setText("");
 		}
 
 	}
@@ -214,7 +233,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 	public static void main(String[] args) {
 		new ClientGUI("localhost", 1500);
 	}
-	
+
 	/**
 	 * Textfield that clears when clicked into and reverts to initial text
 	 * if it is empty when it loses focus. Functionally the same as JTextField besides
@@ -254,7 +273,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		String initialText;
 		Color initialColor;
 		Color onFocusColor;
-		
+
 		public AutoClearTextListener(JTextComponent tc, Color initialColor, Color onFocusColor){
 			this.tc = tc;
 			initialText = tc.getText();
@@ -262,7 +281,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 			tc.setForeground(initialColor);
 			this.onFocusColor = onFocusColor;
 		}
-		
+
 		@Override
 		public void focusGained(FocusEvent e) {
 			if(tc.getText().equals(initialText)){
