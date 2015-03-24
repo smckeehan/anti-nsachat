@@ -5,7 +5,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PublicKey;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 /**
  * Server that accepts multiple clients
  */
@@ -16,6 +18,7 @@ public class Server {
     	ServerSocket listener = new ServerSocket(9898);
     	ClientsListing clients = new ClientsListing();
     	clients.start();
+    	System.out.println("Anti NSA Chat Server Now Running");
     	System.out.println("Server now accepting clients");
     	
         try {
@@ -23,10 +26,10 @@ public class Server {
 				Socket socket = listener.accept();
 				
 				ClientConnection client = new ClientConnection(socket);
-				System.out.println("Client " + client.getUsername() + " has connected.");
 				
 				//Make sure the username doesn't exist already, then add to listing
-				if((clients.getConnection(client.getName())) == null){
+				if((clients.getConnection(client.getUsername())) == null){
+					System.out.println("Client " + client.getUsername() + " has connected.");
 					clients.addConnection(client);
 					client.start();
 				}
@@ -55,13 +58,14 @@ public class Server {
     	public void run(){
     		while(true){
     			//Periodically check if someone has disconnected. Remove them if they have.
-    			for(ClientConnection client : listing.values()){
+    			Iterator<Entry<String,ClientConnection>> it = listing.entrySet().iterator();
+    			while(it.hasNext()){
+    				ClientConnection client = it.next().getValue();
     				if(!client.isAlive()){
-    					listing.remove(client.getUsername());
+    					it.remove();
     					System.out.println("Client " + client.getUsername() + " has disconnected.");
     				}
     			}
-    			
     			try {
 					sleep(5000);
 				} catch (InterruptedException e) {
@@ -114,6 +118,7 @@ public class Server {
         	try {
 				while((obj = in.readObject())!=null){
 					if(obj instanceof ChatMessage){
+						System.out.println("Message Received:");
 						System.out.println((ChatMessage)obj);
 						/*ChatMessage message = (ChatMessage)obj;
 						String recipient = message.getRecipient();*/
