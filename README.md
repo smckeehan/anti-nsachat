@@ -17,23 +17,20 @@ Our project is to create a fully end-to-end encrypted, Java-based chat applicati
 
 #### Installation
 
-Installation requires the Java Runtime Environment (JRE) version 1.7. Run Server.java with command line arguments of the form:
-
-
-Run ClientGUI.java to connect to the Server instance.
+Installation requires the Java Runtime Environment (JRE) version 1.7. Compile and run the .java file (Server, or ClientGUI) to start Anti-NSA Chat.
 
 #### Server Usage
 
-The Server 
+To start the Anti-NSA Chat server, compile and run Server.java. Keep in mind only one server instance can be running on a single port on the same machine at a time.
 
 #### Client Usage
 
-To use the client, enter the server address and port number. Enter a display name for yourself, and enter your RSA key details.
+To use the client, compile and run the Client*.java files. Enter the server IP and port number and a display name to login, as well as the username of who you want to chat with. Add your RSA key information, and start typing encrypted messages to send!
 
 #### License
 
-License details here
+License details will be here
 
 #### References
 
-List any references here
+None yet
