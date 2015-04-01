@@ -187,7 +187,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 			String server = tfServer.getText().trim();
 			if(server.length() == 0)
 				return;
-			// empty or invalid port numer, ignore it
+			// empty or invalid port number, ignore it
 			String portNumber = tfPort.getText().trim();
 			if(portNumber.length() == 0)
 				return;

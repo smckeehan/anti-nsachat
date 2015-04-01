@@ -12,7 +12,9 @@ import java.util.Map.Entry;
  * Server that accepts multiple clients
  */
 public class Server {
-public static ClientsListing clients = new ClientsListing();
+	//Listing of all of the clients currently connected to the server
+	public static ClientsListing clients = new ClientsListing();
+	
     public static void main(String[] args) throws Exception {
     	//Initialize listener and start thread that keeps track of what clients are connected.
     	ServerSocket listener = new ServerSocket(9898);
@@ -26,13 +28,14 @@ public static ClientsListing clients = new ClientsListing();
 				
 				ClientConnection client = new ClientConnection(socket);
 				
-				//Make sure the username doesn't exist already, then add to listing
+				//Make sure the username doesn't exist already, then add to listing and start the client thread.
 				if((clients.getConnection(client.getUsername())) == null){
 					System.out.println("Client " + client.getUsername() + " has connected with public key information n = " + client.getPublicKey().getN() + " and e = " + client.getPublicKey().getE() + ".");
 					clients.addConnection(client);
 					client.start();
 				}
 				else{
+					//If the user name already exists we just drop the connection. If time we should have this send a reply to client letting them know they were dropped
 					socket.close();
 				}
             }
@@ -56,7 +59,7 @@ public static ClientsListing clients = new ClientsListing();
     	
     	public void run(){
     		while(true){
-    			//Periodically check if someone has disconnected. Remove them if they have.
+    			//Periodically check if someone has disconnected. Remove them if they have. Currently refreshes listing every five seconds.
     			Iterator<Entry<String,ClientConnection>> it = listing.entrySet().iterator();
     			while(it.hasNext()){
     				ClientConnection client = it.next().getValue();
@@ -68,7 +71,7 @@ public static ClientsListing clients = new ClientsListing();
     			try {
 					sleep(5000);
 				} catch (InterruptedException e) {
-					
+					System.out.println("Sleep was interrupted");
 				}
     		}
     	}
@@ -99,7 +102,8 @@ public static ClientsListing clients = new ClientsListing();
             in = new ObjectInputStream(socket.getInputStream());
             
             //The second the client connects we need to get its username and public key.
-            //If the client doesn't provide these then the connection was either lost or the client isn't a actual chat client.
+            //If the client doesn't provide these then the connection was either lost or the client isn't a actual chat client,
+            //and null gets "returned" by the constructor.
             Object obj = in.readObject();
             if(obj instanceof ClientHeader){
             	ClientHeader header = (ClientHeader)obj;
@@ -112,33 +116,45 @@ public static ClientsListing clients = new ClientsListing();
         }
         
         public void run() {
-        	//Read messages from client and print to system out.
+        	//Read messages from client and pass along to the recipient
         	Object obj;
         	try {
 				while((obj = in.readObject())!=null){
 					if(obj instanceof ChatMessage){
-						System.out.println("Message Received:");
-						System.out.println((ChatMessage)obj);
-						/*ChatMessage message = (ChatMessage)obj;
-						String recipient = message.getRecipient();*/
-						
+						ChatMessage message = (ChatMessage)obj;
+						System.out.println(message);
+						sendMessage(message);
 					}
 					else if(obj instanceof String){
-						out.writeObject(clients.getConnection((String) obj).getPublicKey());
+						ClientConnection recipient = clients.getConnection((String) obj);
+						if(recipient!=null){
+							out.writeObject(recipient.getPublicKey());
+						}
+						else{
+							//We don't have a key for the requested recipient
+							System.out.println("Request for " + (String)obj + "'s public key could not be completed");
+						}
 					}
 				}
 			}
         	catch(Exception e){
-        		
         	}
         	
         }
         public void sendMessage(ChatMessage m){
         	try{
         		ClientConnection outCon = clients.getConnection(m.getRecipient());
-        		outCon.out.writeObject(m);
+        		//Verify something actually got retrieved, and since listing only refreshes every five seconds, verify the thread still lives
+        		//(The ClientConnection threads die once the socket closes)
+        		if(outCon != null && outCon.isAlive()){
+        			outCon.out.writeObject(m);
+        		}
+        		else{
+        			/*Recipient wasn't found*/
+        			System.out.println("Recipient " + m.getRecipient() + " is not Connected");
+        		}
         	} catch (IOException e) {
-        		
+        		System.out.println("Something went wrong while sending a message");
 			}
         }
         public String getUsername(){
