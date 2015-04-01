@@ -135,7 +135,8 @@ public static ClientsListing clients = new ClientsListing();
         }
         public void sendMessage(ChatMessage m){
         	try{
-        		out.writeObject(m);        		
+        		ClientConnection outCon = clients.getConnection(m.getRecipient());
+        		outCon.out.writeObject(m);
         	} catch (IOException e) {
         		
 			}
