@@ -15,20 +15,21 @@ public class Client {
 	Socket socket;
 	String username;
 	EKey key;
- 	ObjectInputStream in;
- 	ObjectOutputStream out;
- 	RSAEncryption encrypt = new RSAEncryption();
- 	RSADecryption decrypt = new RSADecryption();
- 	
+	ObjectInputStream in;
+	ObjectOutputStream out;
+	RSAEncryption encrypt = new RSAEncryption();
+	RSADecryption decrypt = new RSADecryption();
+	EKey publicKey = null;
+
 	public Client(String server, String username, EKey key) throws UnknownHostException, IOException{
 		this.username = username;
 		socket = new Socket(server,9898);
-        out = new ObjectOutputStream(socket.getOutputStream());
-        out.flush();
-        in = new ObjectInputStream(socket.getInputStream());
-        out.writeObject(new ClientHeader(key,this.username));
+		out = new ObjectOutputStream(socket.getOutputStream());
+		out.flush();
+		in = new ObjectInputStream(socket.getInputStream());
+		out.writeObject(new ClientHeader(key,this.username));
 	}
-	
+
 	public boolean start() {
 		return true;
 	}
@@ -44,28 +45,29 @@ public class Client {
 		} catch (IOException e) {
 			System.out.println("Whoops?");
 		}
-		
-		
+
+
 		return decrypt.decrypt(message, dkey);
 	}
-	
+
 	void sendMessage(String message, String recipient) throws IOException {
 		String time = new SimpleDateFormat("MM.dd.HH.mm.ss").format(new Date());
-		
+
 		//get the encryption key from the server
-		EKey recKey = null;
-		try {
-			recKey = requestKey(recipient);
-		}
-		catch(Exception e) {
-			return;
+		if(publicKey == null) {
+			try {
+				publicKey = requestKey(recipient);
+			}
+			catch(Exception e) {
+				return;
+			}
 		}
 		
 		//encrypt the message using the public key for the recipient
-		message = encrypt.encrypt(message, recKey);
+		message = encrypt.encrypt(message, publicKey);
 		out.writeObject(new ChatMessage(time, username, message, recipient));
 	}
-	
+
 	public EKey requestKey(String target) throws IOException, ClassNotFoundException{
 		out.writeObject(target);
 		Object obj = in.readObject();
@@ -95,7 +97,7 @@ public class Client {
 			}
 		}
 		catch(Exception e){
-			
+
 		}
 	}
 }
