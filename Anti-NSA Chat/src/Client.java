@@ -17,6 +17,9 @@ public class Client {
 	EKey key;
  	ObjectInputStream in;
  	ObjectOutputStream out;
+ 	RSAEncryption encrypt = new RSAEncryption();
+ 	RSADecryption decrypt = new RSADecryption();
+ 	
 	public Client(String server, String username, EKey key) throws UnknownHostException, IOException{
 		this.username = username;
 		socket = new Socket(server,9898);
@@ -29,13 +32,13 @@ public class Client {
 	public boolean start() {
 		return true;
 	}
-	
-	String sendMessage(String message, String recipient, Key key) {
-		RSAEncryption encryption = new RSAEncryption();
-		RSADecryption decryption = new RSADecryption();
-		
+	/**
+	 * This is the testing version of the sendMessage method, 
+	 * used until we have working client to client message sending
+	 */
+	String sendMessage(String message, String recipient, EKey key, DKey dkey) {
 		String time = new SimpleDateFormat("MM.dd.HH.mm.ss").format(new Date());
-		message = encryption.encrypt(message, key);
+		message = encrypt.encrypt(message, key);
 		try {
 			out.writeObject(new ChatMessage(time, username, message, recipient));
 		} catch (IOException e) {
@@ -43,19 +46,32 @@ public class Client {
 		}
 		
 		
-		return decryption.decrypt(message, key);
+		return decrypt.decrypt(message, dkey);
 	}
 	
 	void sendMessage(String message, String recipient) throws IOException {
 		String time = new SimpleDateFormat("MM.dd.HH.mm.ss").format(new Date());
+		
+		//get the encryption key from the server
+		EKey recKey = null;
+		try {
+			recKey = requestKey(recipient);
+		}
+		catch(Exception e) {
+			return;
+		}
+		
+		//encrypt the message using the public key for the recipient
+		message = encrypt.encrypt(message, recKey);
 		out.writeObject(new ChatMessage(time, username, message, recipient));
 	}
-	public PublicKey requestKey(String target) throws IOException, ClassNotFoundException{
-		EKey key = null;
+	
+	public EKey requestKey(String target) throws IOException, ClassNotFoundException{
 		out.writeObject(target);
 		Object obj = in.readObject();
-		if(obj instanceof PublicKey){
-			return (PublicKey)obj;
+		if(obj instanceof EKey){
+			System.out.println("Key recieved, n = " + ((EKey)obj).getN() + " and e = " + ((EKey)obj).getE());
+			return (EKey)obj;
 		}
 		return null;
 	}

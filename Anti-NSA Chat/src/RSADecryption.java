@@ -1,6 +1,6 @@
 
 public class RSADecryption {
-	public String decrypt(String cypher, Key key){
+	public String decrypt(String cypher, DKey key){
 		//turn the cyphertext to a char array, then to an ascii array
 		char[] cypherArray = cypher.toCharArray();
 		int[] asciiArray = new int[cypherArray.length];
@@ -27,7 +27,7 @@ public class RSADecryption {
 
 	}
 
-	public int convert(int i, Key key) {
+	public int convert(int i, DKey key) {
 		//get the encryption component of the key
 		int d = key.getD();
 		int n = key.getN();

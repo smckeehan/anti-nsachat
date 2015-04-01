@@ -2,7 +2,7 @@ import java.security.PublicKey;
 
 
 public class RSAEncryption {
-	public String encrypt(String message, Key key) {
+	public String encrypt(String message, EKey key) {
 		
 		//convert the string to an array of characters, then to an array of ascii integers
 		char[] messageArray = message.toCharArray();
@@ -28,7 +28,7 @@ public class RSAEncryption {
 		return result;
 	}
 	
-	public int convert(int i, Key key) {
+	public int convert(int i, EKey key) {
 		//get the encryption component of the key
 		int e = key.getE();
 		int n = key.getN();

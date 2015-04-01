@@ -156,13 +156,19 @@ public class ClientGUI extends JFrame implements ActionListener {
 			String recName = recipient.getText().trim();
 
 			//get key values
-			Key key = new Key();
+			EKey key = new EKey();
 			key.setN(Integer.parseInt(kn.getText()));
 			key.setE(Integer.parseInt(ke.getText()));
-			key.setD(Integer.parseInt(kd.getText()));
+			DKey dkey = new DKey();
+			dkey.setN(Integer.parseInt(kn.getText()));
+			dkey.setD(Integer.parseInt(kd.getText()));
 
 			//send message
-			text = client.sendMessage(text, recName, key);
+			try {
+				client.sendMessage(text, recName);
+			} catch (IOException e1) {
+				System.out.println("Message failed to send properly");
+			}
 
 			//put the returned message in the chat field and clear message box
 			ta.append(username + ": " + text + "\n");
