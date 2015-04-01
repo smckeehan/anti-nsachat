@@ -14,15 +14,16 @@ import java.util.Date;
 public class Client {
 	Socket socket;
 	String username;
+	EKey key;
  	ObjectInputStream in;
  	ObjectOutputStream out;
-	public Client(String server, String username) throws UnknownHostException, IOException{
+	public Client(String server, String username, EKey key) throws UnknownHostException, IOException{
 		this.username = username;
 		socket = new Socket(server,9898);
         out = new ObjectOutputStream(socket.getOutputStream());
         out.flush();
         in = new ObjectInputStream(socket.getInputStream());
-        out.writeObject(new ClientHeader(null,this.username));
+        out.writeObject(new ClientHeader(key,this.username));
 	}
 	
 	public boolean start() {
@@ -49,9 +50,9 @@ public class Client {
 		String time = new SimpleDateFormat("MM.dd.HH.mm.ss").format(new Date());
 		out.writeObject(new ChatMessage(time, username, message, recipient));
 	}
-	public PublicKey requestKey(String username ) throws IOException, ClassNotFoundException{
-		PublicKey key = null;
-		out.writeObject(key);
+	public PublicKey requestKey(String target) throws IOException, ClassNotFoundException{
+		EKey key = null;
+		out.writeObject(target);
 		Object obj = in.readObject();
 		if(obj instanceof PublicKey){
 			return (PublicKey)obj;
@@ -69,7 +70,7 @@ public class Client {
 	}
 	public static void main(String args[]){
 		try{
-			Client client = new Client("127.0.0.1","TestClient");
+			Client client = new Client("127.0.0.1","TestClient", new EKey(143, 7));
 			BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
 			String inputLine;
 			while((inputLine = sysin.readLine())!=null){

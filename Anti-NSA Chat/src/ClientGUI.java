@@ -157,9 +157,9 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 			//get key values
 			Key key = new Key();
-			key.setN(kn.getText());
-			key.setE(ke.getText());
-			key.setD(kd.getText());
+			key.setN(Integer.parseInt(kn.getText()));
+			key.setE(Integer.parseInt(ke.getText()));
+			key.setD(Integer.parseInt(kd.getText()));
 
 			//send message
 			text = client.sendMessage(text, recName, key);
@@ -185,24 +185,45 @@ public class ClientGUI extends JFrame implements ActionListener {
 			String portNumber = tfPort.getText().trim();
 			if(portNumber.length() == 0)
 				return;
-			//			int port = 0;
-			//			try {
-			//				port = Integer.parseInt(portNumber);
-			//			}
-			//			catch(Exception en) {
-			//				return;   // nothing I can do if port number is not valid
-			//			}
+
+			//ensure the key information is filled in
+			if(kn.getText().trim().length() == 0 || ke.getText().trim().length() == 0 || kd.getText().trim().length() == 0) {
+				return;
+			}
+			//create the public portion of the key to share
+			EKey key = new EKey();
+			int keyN = 0;
+			int keyE = 0;
+			try {
+				keyN = Integer.parseInt(kn.getText());
+				keyE = Integer.parseInt(ke.getText());
+			}
+			catch(Exception ex) {
+				System.out.println("Key parse failure");
+				return;
+			}
+			key.setN(keyN);
+			key.setE(keyE);
+
+			int port = 0;
+			try {
+				port = Integer.parseInt(portNumber);
+			}
+			catch(Exception en) {
+				System.out.println("Port Number failure");
+				return;   // nothing I can do if port number is not valid
+			}
 
 			// try creating a new Client with GUI
 			try {
-				client = new Client(server, username);
+				client = new Client(server, username, key);
 			} catch (UnknownHostException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (IOException e1) {
 				System.out.println("Interesting...");
 			}
-			
+
 			// test if we can start the Client
 			if(!client.start()) 
 				return;
@@ -219,6 +240,10 @@ public class ClientGUI extends JFrame implements ActionListener {
 			// Action listener for when the user enter a message
 			message.addActionListener(this);
 			send.setEnabled(true);
+			kn.setEditable(false);
+			ke.setEditable(false);
+			kd.setEditable(false);
+			user.setEditable(false);
 		}
 
 		//if hit the logout button

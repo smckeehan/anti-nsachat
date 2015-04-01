@@ -7,40 +7,22 @@ public class Key {
 	public int getN(){
 		return n;
 	}
-	public void setN(String newN){
-		char[] chars = newN.toCharArray();
-		int result = 0;
-		for(int i = 0; i < chars.length; i++){
-			int num = ((int)chars[i]) - 48;
-			result += num * Math.pow(10, chars.length - 1 - i);
-		}
-		n = result;
+	public void setN(int newN){
+		n = newN;
 	}
 	
 	public int getE(){
 		return e;
 	}
-	public void setE(String newE){
-		char[] chars = newE.toCharArray();
-		int result = 0;
-		for(int i = 0; i < chars.length; i++){
-			int num = ((int)chars[i]) - 48;
-			result += num * Math.pow(10, chars.length - 1 - i);
-		}
-		e = result;
+	public void setE(int newE){
+		e = newE;
 	}
 	
 	public int getD(){
 		return d;
 	}
-	public void setD(String newD){
-		char[] chars = newD.toCharArray();
-		int result = 0;
-		for(int i = 0; i < chars.length; i++){
-			int num = ((int)chars[i]) - 48;
-			result += num * Math.pow(10, chars.length - 1 - i);
-		}
-		d = result;
+	public void setD(int newD){
+		d = newD;
 	}
 	
 	public Key(int n, int e, int d){

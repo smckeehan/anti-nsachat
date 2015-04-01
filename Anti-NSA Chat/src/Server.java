@@ -12,11 +12,10 @@ import java.util.Map.Entry;
  * Server that accepts multiple clients
  */
 public class Server {
-
+public static ClientsListing clients = new ClientsListing();
     public static void main(String[] args) throws Exception {
     	//Initialize listener and start thread that keeps track of what clients are connected.
     	ServerSocket listener = new ServerSocket(9898);
-    	ClientsListing clients = new ClientsListing();
     	clients.start();
     	System.out.println("Anti NSA Chat Server Now Running");
     	System.out.println("Server now accepting clients");
@@ -29,7 +28,7 @@ public class Server {
 				
 				//Make sure the username doesn't exist already, then add to listing
 				if((clients.getConnection(client.getUsername())) == null){
-					System.out.println("Client " + client.getUsername() + " has connected.");
+					System.out.println("Client " + client.getUsername() + " has connected with public key information n = " + client.getPublicKey().getN() + " and e = " + client.getPublicKey().getE() + ".");
 					clients.addConnection(client);
 					client.start();
 				}
@@ -87,7 +86,7 @@ public class Server {
     private static class ClientConnection extends Thread {
         private Socket socket;
         private String username;
-        private PublicKey publicKey;
+        private EKey publicKey;
    	 	ObjectInputStream in;
    	 	ObjectOutputStream out;
    	 	
@@ -124,9 +123,9 @@ public class Server {
 						String recipient = message.getRecipient();*/
 						
 					}
-					/**else if(obj instanceof PublicKeyRequest){
-						
-					}**/
+					else if(obj instanceof String){
+						out.writeObject(clients.getConnection((String) obj).getPublicKey());
+					}
 				}
 			}
         	catch(Exception e){
@@ -145,7 +144,7 @@ public class Server {
         	return username;
         }
         
-        public PublicKey getPublicKey(){
+        public EKey getPublicKey(){
         	return publicKey;
         }
         
