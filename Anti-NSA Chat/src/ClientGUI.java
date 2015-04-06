@@ -171,7 +171,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 			}
 
 			//put the returned message in the chat field and clear message box
-			ta.append(username + ": " + text + "\n");
+			ta.append("To " + recName + "> " + text + "\n");
 			message.setText("");
 			return;
 		}
@@ -260,8 +260,11 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 		//if hit the logout button
 		else if (o == login && loggedIn) {
+			//close the client and remove it
 			client.end();
 			client = null;
+			
+			//change textfields to be editable and make messages not able to send
 			message.removeActionListener(this);
 			send.setEnabled(false);
 			kn.setEditable(true);
@@ -270,12 +273,28 @@ public class ClientGUI extends JFrame implements ActionListener {
 			user.setEditable(true);
 			tfServer.setEditable(true);
 			tfPort.setEditable(true);
+			
+			//set client as logged out, and change login button to login
+			login.setText("Login");
+			loggedIn = false;
 		}
 
 	}
 	
+	/**
+	 * send a typical chat message to the display
+	 * @param message
+	 */
 	public void printMessage(ChatMessage message) {
 		ta.append(message.toString() + "\n");
+	}
+	
+	/**
+	 * send a special server message to the display
+	 * @param message
+	 */
+	public void serverMessage(String message) {
+		ta.append("Server: " + message + "\n");
 	}
 
 	// to start the whole thing the server

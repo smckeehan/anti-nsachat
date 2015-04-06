@@ -1,4 +1,8 @@
-
+/**
+ * The class used to decrypt messages recieved from the server.
+ * @author Kyle Timmerman
+ *
+ */
 public class RSADecryption {
 	public String decrypt(String cypher, DKey key){
 		//turn the cyphertext to a char array, then to an ascii array

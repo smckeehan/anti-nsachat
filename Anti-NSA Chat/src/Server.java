@@ -4,6 +4,8 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PublicKey;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -125,16 +127,23 @@ public class Server {
 						System.out.println(message);
 						sendMessage(message);
 					}
-					else if(obj instanceof String){
-						ClientConnection recipient = clients.getConnection((String) obj);
+					else if(obj instanceof KeyRequest){
+						System.out.println("Key request recieved, searching for recipient: " + ((KeyRequest)obj).getRecipient());
+						ClientConnection recipient = clients.getConnection(((KeyRequest)obj).getRecipient());
 						if(recipient!=null){
-							System.out.println("Key request recieved for " + (String)obj + ". Sending now");
+							System.out.println("Key request recieved for " + ((KeyRequest)obj).getRecipient() + ". Sending now");
 							out.writeObject(recipient.getPublicKey());
 						}
 						else{
-							//We don't have a key for the requested recipient
-							System.out.println("Request for " + (String)obj + "'s public key could not be completed");
+							//We don't have a key for the requested recipient, assume they are not connected
+							System.out.println("Request for " + ((KeyRequest)obj).getRecipient() + "'s public key could not be completed");
+							ClientConnection outCon = clients.getConnection(((KeyRequest)obj).getUsername());
+		        			outCon.out.writeObject("Recipient " + ((KeyRequest)obj).getRecipient() + " is not connected, " + 
+							"above message was not sent.");
 						}
+					}
+					else if (obj instanceof String) {
+						System.out.println("Dead end code to check something");
 					}
 				}
 			}
@@ -153,6 +162,9 @@ public class Server {
         		else{
         			/*Recipient wasn't found*/
         			System.out.println("Recipient " + m.getRecipient() + " is not Connected");
+        			outCon = clients.getConnection(m.getUsername());
+        			outCon.out.writeObject("Recipient " + m.getRecipient() + " is not connected, " + 
+        			"above message was not sent.");
         		}
         	} catch (IOException e) {
         		System.out.println("Something went wrong while sending a message");

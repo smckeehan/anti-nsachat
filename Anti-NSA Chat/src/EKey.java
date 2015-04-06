@@ -1,7 +1,12 @@
 import java.io.Serializable;
 
-
+/**
+ *The encrypt key used by the encryption object 
+ * @author Kyle Timmerman
+ *
+ */
 public class EKey implements Serializable{
+	private static final long serialVersionUID = 1L;
 	private int n;
 	private int e;
 	

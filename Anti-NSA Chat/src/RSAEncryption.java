@@ -1,6 +1,10 @@
 import java.security.PublicKey;
 
-
+/**
+ * The class used to encrypt messages to be sent to the server
+ * @author Kyle Timmerman
+ *
+ */
 public class RSAEncryption {
 	public String encrypt(String message, EKey key) {
 		

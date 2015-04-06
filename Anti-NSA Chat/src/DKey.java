@@ -1,4 +1,8 @@
-
+/**
+ * The decryption key used bye the decryption class
+ * @author Kyle Timmerman
+ *
+ */
 public class DKey {
 	private int n;
 	private int d;

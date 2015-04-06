@@ -15,6 +15,7 @@ import java.util.Date;
 public class Client {
 	Socket socket;
 	String username;
+	String recipient;
 	EKey encryptKey;
 	DKey decryptKey;
 	ClientGUI clientGUI;
@@ -61,40 +62,37 @@ public class Client {
 		}
 
 	}
-
+	
 	/**
-	 * This is the testing version of the sendMessage method, 
-	 * used until we have working client to client message sending
+	 * The method used to send messages to the server, this allows for changing recipients by re-requesting keys
+	 * @param message, the chat message to send out
+	 * @param recipient, the target of the message
+	 * @throws IOException if there is a problem sending
+	 * 
 	 */
-	String sendMessage(String message, String recipient, EKey key, DKey dkey) {
-		String time = new SimpleDateFormat("MM.dd.HH.mm.ss").format(new Date());
-		message = encrypt.encrypt(message, key);
-		try {
-			out.writeObject(new ChatMessage(time, username, message, recipient));
-		} catch (IOException e) {
-			System.out.println("Whoops?");
-		}
-
-
-		return decrypt.decrypt(message, dkey);
-	}
-
 	void sendMessage(String message, String recipient) throws IOException {
 		String time = new SimpleDateFormat("MM.dd.HH.mm.ss").format(new Date());
 
 		//get the encryption key from the server
-		if(encryptKey == null) {
+		if(encryptKey == null || !recipient.equals(this.recipient)) {
+			//store the message to be sent later
 			storedMessage = new ChatMessage(time, username, message, recipient);
+			
+			//try to request the key of the recipient
 			try {
 				requestKey(recipient);
+				this.recipient = recipient;
 			}
 			catch(Exception e) {
 				return;
 			}
+			//there is nothing more to do here, wait for the key
 		}
 
 		else {
+			//clear out the stored message
 			storedMessage = null;
+			
 			//encrypt the message using the public key for the recipient
 			message = encrypt.encrypt(message, encryptKey);
 
@@ -102,9 +100,18 @@ public class Client {
 		}
 	}
 
+	/**
+	 * Sends out a KeyRequest object to the server, in order to get the public key for the target
+	 * @param target, the target of the message
+	 * @throws IOException if something goes wrong
+	 * @throws ClassNotFoundException
+	 */
 	public void requestKey(String target) throws IOException, ClassNotFoundException{
-		out.writeObject(target);
+		KeyRequest request = new KeyRequest(username, target);
+		System.out.println("this is a test to see if we get here...");
+		out.writeObject(request);
 	}
+	
 	public Collection getRecipientList() throws ClassNotFoundException, IOException{
 		Collection clients = null;
 		out.writeObject(clients);
@@ -114,26 +121,42 @@ public class Client {
 		}
 		return null;
 	}
-
+	/**
+	 * A message has been recieved from the server, should decrypt and send to the gui
+	 * @param message, the message recieved from the server
+	 * 
+	 */
 	public void recieved(ChatMessage message){
+		
+		//get the message out of the object and decrypt it
 		String text = message.getMessage();
 		message.setMessage(decrypt.decrypt(text, decryptKey));
+		
+		//send the newly decrypted message object to the gui
 		clientGUI.printMessage(message);
 	}
-
-	public void setKey(EKey key) {
-		encryptKey = key;
-		try {
-			encryptAndSend();
-		} catch (IOException e) {
-			System.out.println("The encrypt method failed...");
-		}
+	
+	/**
+	 * The server sent a message directly, no need to decrypt it, just send straight to the gui
+	 * @param message, the string to send to the gui
+	 */
+	public void serverMessage(String message) {
+		clientGUI.serverMessage(message);
 	}
 
-	public void encryptAndSend() throws IOException {
+	/**
+	 * Key request recieved from the server
+	 * @param key
+	 */
+	public void setKey(EKey key) throws IOException {
+		//first set the public key as the recieved key
+		encryptKey = key;
+		
+		//now encrypt and send it out
 		String cypher = encrypt.encrypt(storedMessage.getMessage(), encryptKey);
 		out.writeObject(new ChatMessage(storedMessage.getTime(), username, cypher, storedMessage.getRecipient()));
 	}
+
 	public static void main(String args[]){
 		try{
 			Client client = new Client("127.0.0.1","Anybody", new EKey(143, 7), new DKey(143, 103), null);
@@ -175,19 +198,28 @@ class MessageReceiver extends Thread{
 				else if(obj instanceof EKey) {
 					client.setKey((EKey) obj);
 				}
+				else if(obj instanceof String) {
+					client.serverMessage((String)obj);
+				}
 			}
 		}
 		catch(Exception e){
+			//this depends on if the thread is meant to run or not
 			if(run) {
+				//the thread should be running, there's something wrong
 				System.out.println("Message Receiver intterrupted.");
 				e.printStackTrace();
 			}
 			else {
+				//the thread shouldn't be running, all is well
 				System.out.println("Message Reciever logged out.");
 			}
 		}
 	}
 
+	/**
+	 * close the thread
+	 */
 	public void close(){
 		in = null;
 		run = false;
