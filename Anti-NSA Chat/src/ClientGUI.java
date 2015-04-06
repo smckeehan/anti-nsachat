@@ -197,19 +197,25 @@ public class ClientGUI extends JFrame implements ActionListener {
 				return;
 			}
 			//create the public portion of the key to share
-			EKey key = new EKey();
+			EKey ekey = new EKey();
+			DKey dkey = new DKey();
 			int keyN = 0;
 			int keyE = 0;
+			int keyD = 0;
 			try {
 				keyN = Integer.parseInt(kn.getText());
 				keyE = Integer.parseInt(ke.getText());
+				keyD = Integer.parseInt(kd.getText());
 			}
 			catch(Exception ex) {
 				System.out.println("Key parse failure");
 				return;
 			}
-			key.setN(keyN);
-			key.setE(keyE);
+			ekey.setN(keyN);
+			ekey.setE(keyE);
+			
+			dkey.setN(keyN);
+			dkey.setD(keyD);
 
 			int port = 0;
 			try {
@@ -222,7 +228,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 			// try creating a new Client with GUI
 			try {
-				client = new Client(server, username, key);
+				client = new Client(server, username, ekey, dkey, this);
 			} catch (UnknownHostException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -253,11 +259,23 @@ public class ClientGUI extends JFrame implements ActionListener {
 		}
 
 		//if hit the logout button
-		if (o == login && loggedIn) {
-			//client.sendMessage("");
-			return;
+		else if (o == login && loggedIn) {
+			client.end();
+			client = null;
+			message.removeActionListener(this);
+			send.setEnabled(false);
+			kn.setEditable(true);
+			ke.setEditable(true);
+			kd.setEditable(true);
+			user.setEditable(true);
+			tfServer.setEditable(true);
+			tfPort.setEditable(true);
 		}
 
+	}
+	
+	public void printMessage(ChatMessage message) {
+		ta.append(message.toString() + "\n");
 	}
 
 	// to start the whole thing the server

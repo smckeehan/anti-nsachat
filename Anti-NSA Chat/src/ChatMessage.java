@@ -16,6 +16,9 @@ public class ChatMessage implements Serializable{
 	public String getMessage(){
 		return message;
 	}
+	public void setMessage(String newMessage) {
+		message = newMessage;
+	}
 	public String getTime(){
 		return time;
 	}
