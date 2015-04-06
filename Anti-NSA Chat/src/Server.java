@@ -128,10 +128,8 @@ public class Server {
 						sendMessage(message);
 					}
 					else if(obj instanceof KeyRequest){
-						System.out.println("Key request recieved, searching for recipient: " + ((KeyRequest)obj).getRecipient());
 						ClientConnection recipient = clients.getConnection(((KeyRequest)obj).getRecipient());
 						if(recipient!=null){
-							System.out.println("Key request recieved for " + ((KeyRequest)obj).getRecipient() + ". Sending now");
 							out.writeObject(recipient.getPublicKey());
 						}
 						else{

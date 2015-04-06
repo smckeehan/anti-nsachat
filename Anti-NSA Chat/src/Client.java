@@ -58,7 +58,7 @@ public class Client {
 			out.close();
 			in.close();
 		} catch (IOException e) {
-			System.out.println("Closing failed...?");
+			System.out.println("Closing failed.");
 		}
 
 	}
@@ -108,7 +108,6 @@ public class Client {
 	 */
 	public void requestKey(String target) throws IOException, ClassNotFoundException{
 		KeyRequest request = new KeyRequest(username, target);
-		System.out.println("this is a test to see if we get here...");
 		out.writeObject(request);
 	}
 	
@@ -191,8 +190,7 @@ class MessageReceiver extends Thread{
 			while((obj = in.readObject())!=null){
 				if(obj instanceof ChatMessage){
 					ChatMessage message = (ChatMessage)obj;
-					System.out.println(message);
-					//why not try to give the client the message?
+					//just send out the message
 					client.recieved(message);
 				}
 				else if(obj instanceof EKey) {
