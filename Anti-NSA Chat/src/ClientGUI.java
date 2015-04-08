@@ -228,12 +228,13 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 			// try creating a new Client with GUI
 			try {
-				client = new Client(server, username, ekey, dkey, this);
+				client = new Client(server,port, username, ekey, dkey, this);
 			} catch (UnknownHostException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			} catch (IOException e1) {
-				System.out.println("Interesting...");
+				serverMessage("Specified server could not be reached");
+				return;
 			}
 
 			// test if we can start the Client
@@ -299,7 +300,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 	// to start the whole thing the server
 	public static void main(String[] args) {
-		new ClientGUI("localhost", 1500);
+		new ClientGUI("localhost", 9898);
 	}
 
 	/**

@@ -11,29 +11,45 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 
-
+/**
+ * Essentially the controller that allows clients to interact with the view(ClientGui) and the(kind of) model(Sever). Contains
+ * all of the necessary methods for sending and receiving information from the server, and passing it along to the gui.
+ */
 public class Client {
-	Socket socket;
-	String username;
-	String recipient;
-	EKey encryptKey;
-	DKey decryptKey;
-	ClientGUI clientGUI;
-	ObjectInputStream in;
-	ObjectOutputStream out;
-	RSAEncryption encrypt = new RSAEncryption();
-	RSADecryption decrypt = new RSADecryption();
-	EKey publicKey;
-	ChatMessage storedMessage;
+	Socket socket;//The socket the client connects on
+	String username;//The clients username
+	String recipient;//The recipient of messages.
+	EKey encryptKey;//The key used for encryption
+	DKey decryptKey;//The key used for decryption
+	ClientGUI clientGUI;//The GUI paired with this client.
+	ObjectInputStream in;//The stream used to received information from the server
+	ObjectOutputStream out;//The stream used to send information to the server
+	RSAEncryption encrypt = new RSAEncryption();//The encryptor
+	RSADecryption decrypt = new RSADecryption();//The decryptor
+	EKey publicKey;//The encryption key
+	ChatMessage storedMessage;//temporary message storage
 
-	MessageReceiver messageReceiver;
-
-	public Client(String server, String username, EKey publicKey, DKey decryptKey, ClientGUI gui) throws UnknownHostException, IOException{
+	MessageReceiver messageReceiver;//A Thread who's focus is to receive messages
+	
+	/**
+	 * Constructor for creating a Client. If a exception is thrown(I.e. a connection couldn't be established) then
+	 * returns a null.
+	 * 
+	 * @param server The IP Address of the server
+	 * @param username Username for the client.
+	 * @param publicKey Clients public key
+	 * @param decryptKey Cilents private key
+	 * @param gui The clients gui interface
+	 * @throws UnknownHostException
+	 * @throws IOException
+	 */
+	public Client(String server, int port, String username, EKey publicKey, DKey decryptKey, ClientGUI gui) throws UnknownHostException, IOException{
 		this.username = username; //This clients username
-		socket = new Socket(server,9898); //The socket this client communicates on.
+		socket = new Socket(server,port); //The socket this client communicates on.
 		this.publicKey = publicKey;
 		this.decryptKey = decryptKey;
 		clientGUI = gui;
+		
 		//initializing object streams on the socket, and write ClientHeader.
 		//ClientHeader contains information that is required for the server to accept the connection, so if this doesn't happen
 		//the client won't be able to connect.
@@ -111,15 +127,6 @@ public class Client {
 		out.writeObject(request);
 	}
 	
-	public Collection getRecipientList() throws ClassNotFoundException, IOException{
-		Collection clients = null;
-		out.writeObject(clients);
-		Object obj = in.readObject();
-		if(obj instanceof Collection){
-			return (Collection)obj;
-		}
-		return null;
-	}
 	/**
 	 * A message has been recieved from the server, should decrypt and send to the gui
 	 * @param message, the message recieved from the server
@@ -158,7 +165,7 @@ public class Client {
 
 	public static void main(String args[]){
 		try{
-			Client client = new Client("127.0.0.1","Anybody", new EKey(143, 7), new DKey(143, 103), null);
+			Client client = new Client("127.0.0.1",9898,"Anybody", new EKey(143, 7), new DKey(143, 103), null);
 			BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
 			String inputLine;
 			while((inputLine = sysin.readLine())!=null){
@@ -175,14 +182,16 @@ public class Client {
  * once something comes in it prints to system out.
  */
 class MessageReceiver extends Thread{
-	ObjectInputStream in;
+	ObjectInputStream in;//The input stream
 	Client client;
 	static boolean run;
+	
 	public MessageReceiver(ObjectInputStream in,Client client){
 		this.in = in;
 		this.client = client;
 		run = true;
 	}
+	
 	public void run() {
 		Object obj;
 		try {

@@ -11,17 +11,26 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 /**
- * Server that accepts multiple clients
+ * A Server that accepts multiple clients
  */
 public class Server {
 	//Listing of all of the clients currently connected to the server
 	public static ClientsListing clients = new ClientsListing();
 	
     public static void main(String[] args) throws Exception {
+    	int port = 9898;
+    	if(args.length>0){
+    		try{
+    			port = Integer.parseInt(args[0]);
+    		}
+    		catch(Exception e){
+    			System.out.println("Port could not be parsed, defaulting to port 9898");
+    		}
+    	}
     	//Initialize listener and start thread that keeps track of what clients are connected.
-    	ServerSocket listener = new ServerSocket(9898);
+    	ServerSocket listener = new ServerSocket(port);
     	clients.start();
-    	System.out.println("Anti NSA Chat Server Now Running");
+    	System.out.println("Anti NSA Chat Server Now Running on port " + port);
     	System.out.println("Server now accepting clients");
     	
         try {
@@ -77,30 +86,53 @@ public class Server {
 				}
     		}
     	}
+    	 /**
+    	  * Returns a ClientConnection from the map when provided with a username.
+    	  * 
+    	  * @param username The username of the client who's connection is being request.
+    	  * @return a ClientConnection for the client with the provided username. Note that we use the default
+    	  *  behavior of HashMap's get function, so if the client wasn't in the listing then null is returned.
+    	  * @see HashMap
+    	  **/
     	public ClientConnection getConnection(String username){
     		return listing.get(username);
     	}
+    	/**
+    	 * Adds a client to the connection listing.
+    	 * 
+    	 * @param client The ClientConnection that is getting added to the client listing.
+    	 */
     	public void addConnection(ClientConnection client){
     		listing.put(client.getUsername(),client);
     	}
     }
+    
     /**
      * Class that handles Communication between clients. We use objects rather
-     * than Strings to communicate with clients so that we can transfer information easily.
+     * than explicit Strings to communicate with clients so that we can transfer information easily.
      */
     private static class ClientConnection extends Thread {
-        private Socket socket;
-        private String username;
-        private EKey publicKey;
-   	 	ObjectInputStream in;
-   	 	ObjectOutputStream out;
+        private Socket socket;//socket the client is connected on
+        private String username;//the clients username
+        private EKey publicKey;//the clients public key
+   	 	ObjectInputStream in;//the input stream the server receives information from the client on/
+   	 	ObjectOutputStream out;//the stream information is sent to the client on.
    	 	
-   	 	
+   	 	/**
+   	 	 * Constructs the client listing provided the socket for the client. Note that the constructor can throw an exception.
+   	 	 *  When this occurs it returns a null, meaning that if what we receive on the socket isn't in line with what we expect,
+   	 	 *  then we can avoid trying to create the connection at all by returning null and letting the main function know that 
+   	 	 *  something went wrong.
+   	 	 * 
+   	 	 * @param socket The socket to initialize the ClientConnection on.
+   	 	 * @throws IOException	gets thrown by input/output streams
+   	 	 * @throws ClassNotFoundException Intentionally when we don't receive a client header, since it is a MUST in order for a client
+   	 	 * to connect properly.
+   	 	 */
         public ClientConnection(Socket socket) throws IOException, ClassNotFoundException {
             this.socket = socket;
-            out = new ObjectOutputStream(socket.getOutputStream());
-            //Object streams transmit some initial data so we flush it first thing.
-            out.flush();
+            out = new ObjectOutputStream(socket.getOutputStream());	
+            out.flush();//Object streams transmit some initial data so we flush it first thing.
             in = new ObjectInputStream(socket.getInputStream());
             
             //The second the client connects we need to get its username and public key.
@@ -113,7 +145,7 @@ public class Server {
             	this.publicKey = header.getKey();
             }
             else{
-            	throw new IOException("Received incorrect object type.");
+            	throw new ClassNotFoundException("Received incorrect object type.");
             }
         }
         
@@ -122,11 +154,13 @@ public class Server {
         	Object obj;
         	try {
 				while((obj = in.readObject())!=null){
+					/*When a message is received, we just pass it along*/
 					if(obj instanceof ChatMessage){
 						ChatMessage message = (ChatMessage)obj;
 						System.out.println(message);
 						sendMessage(message);
 					}
+					/*When a key request is received, we find it in our listing and send out the key, otherwise we let the client know the client wasn't here*/
 					else if(obj instanceof KeyRequest){
 						ClientConnection recipient = clients.getConnection(((KeyRequest)obj).getRecipient());
 						if(recipient!=null){
@@ -149,6 +183,11 @@ public class Server {
         	}
         	
         }
+        /**
+         * Sends ChatMessage objects out to their intended recipient.
+         * 
+         * @param m The message to pass along to the recipient.
+         */
         public void sendMessage(ChatMessage m){
         	try{
         		ClientConnection outCon = clients.getConnection(m.getRecipient());
@@ -158,7 +197,7 @@ public class Server {
         			outCon.out.writeObject(m);
         		}
         		else{
-        			/*Recipient wasn't found*/
+        			/*Recipient wasn't found, so let the sender know*/
         			System.out.println("Recipient " + m.getRecipient() + " is not Connected");
         			outCon = clients.getConnection(m.getUsername());
         			outCon.out.writeObject("Recipient " + m.getRecipient() + " is not connected, " + 
@@ -168,14 +207,29 @@ public class Server {
         		System.out.println("Something went wrong while sending a message");
 			}
         }
+        /**
+         * Returns the username attached to this ClientConnection.
+         * 
+         * @return The username attached to this ClientConnection.
+         */
         public String getUsername(){
         	return username;
         }
         
+        /**
+         * Returns the public key attached to this ClientConnection.
+         * 
+         * @return The public key of this ClientConnection.
+         */
         public EKey getPublicKey(){
         	return publicKey;
         }
         
+        /**
+         * Returns the socket that this client is currently connected on.
+         * 
+         * @return The socket this client is currently connected on.
+         */
         public Socket getSocket(){
         	return socket;
         }
