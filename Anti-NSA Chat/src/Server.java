@@ -44,10 +44,16 @@ public class Server {
 					System.out.println("Client " + client.getUsername() + " has connected with public key information n = " + client.getPublicKey().getN() + " and e = " + client.getPublicKey().getE() + ".");
 					clients.addConnection(client);
 					client.start();
+					client.out.writeObject("Logged in, welcome.");
 				}
 				else{
 					//If the user name already exists we just drop the connection. If time we should have this send a reply to client letting them know they were dropped
+					System.out.println("Duplicate username, aborting");
+					String output = "This username is already in use, please select a different name.";
+					client.out.writeObject(output);
+
 					socket.close();
+					
 				}
             }
         } 
