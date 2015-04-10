@@ -183,6 +183,12 @@ public class ClientGUI extends JFrame implements ActionListener {
 			// empty username ignore it
 			if(username.length() == 0)
 				return;
+
+			if(username.equals("Enter your username...")){
+				ta.append("Please enter a username." + "\n");
+				return;
+			}
+
 			// empty serverAddress ignore it
 			String server = tfServer.getText().trim();
 			if(server.length() == 0)
@@ -194,6 +200,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 			//ensure the key information is filled in
 			if(kn.getText().trim().length() == 0 || ke.getText().trim().length() == 0 || kd.getText().trim().length() == 0) {
+				ta.append("Please enter valid key components" + "\n");
 				return;
 			}
 			//create the public portion of the key to share
@@ -213,7 +220,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 			}
 			ekey.setN(keyN);
 			ekey.setE(keyE);
-			
+
 			dkey.setN(keyN);
 			dkey.setD(keyD);
 
@@ -235,6 +242,12 @@ public class ClientGUI extends JFrame implements ActionListener {
 			} catch (IOException e1) {
 				serverMessage("Specified server could not be reached");
 				return;
+			}
+
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e1) {
+
 			}
 
 			// test if we can start the Client
@@ -264,7 +277,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 			//close the client and remove it
 			client.end();
 			client = null;
-			
+
 			//change textfields to be editable and make messages not able to send
 			message.removeActionListener(this);
 			send.setEnabled(false);
@@ -274,14 +287,14 @@ public class ClientGUI extends JFrame implements ActionListener {
 			user.setEditable(true);
 			tfServer.setEditable(true);
 			tfPort.setEditable(true);
-			
+
 			//set client as logged out, and change login button to login
 			login.setText("Login");
 			loggedIn = false;
 		}
 
 	}
-	
+
 	/**
 	 * send a typical chat message to the display
 	 * @param message
@@ -289,7 +302,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 	public void printMessage(ChatMessage message) {
 		ta.append(message.toString() + "\n");
 	}
-	
+
 	/**
 	 * send a special server message to the display
 	 * @param message
