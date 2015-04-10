@@ -151,7 +151,7 @@ public class Client {
 		if (message.equals("This username is already in use, please select a different name.")){
 			connected = false;
 		}
-		else if (message.equals("Logged in, welcome")) {
+		else if (message.equals("Logged in, welcome.")) {
 			connected = true;
 		}
 		clientGUI.serverMessage(message);
