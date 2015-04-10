@@ -87,7 +87,7 @@ public class Client {
 	 * 
 	 */
 	void sendMessage(String message, String recipient) throws IOException {
-		String time = new SimpleDateFormat("MM/dd hh.mm.ss a").format(new Date());
+		String time = new SimpleDateFormat("[MM/dd hh.mm.ss a]").format(new Date());
 
 		//get the encryption key from the server
 		if(encryptKey == null || !recipient.equals(this.recipient)) {
