@@ -16,6 +16,7 @@ import java.util.Date;
  * all of the necessary methods for sending and receiving information from the server, and passing it along to the gui.
  */
 public class Client {
+	boolean connected = false;
 	Socket socket;//The socket the client connects on
 	String username;//The clients username
 	String recipient;//The recipient of messages.
@@ -30,7 +31,7 @@ public class Client {
 	ChatMessage storedMessage;//temporary message storage
 
 	MessageReceiver messageReceiver;//A Thread who's focus is to receive messages
-	
+
 	/**
 	 * Constructor for creating a Client. If a exception is thrown(I.e. a connection couldn't be established) then
 	 * returns a null.
@@ -49,7 +50,7 @@ public class Client {
 		this.publicKey = publicKey;
 		this.decryptKey = decryptKey;
 		clientGUI = gui;
-		
+
 		//initializing object streams on the socket, and write ClientHeader.
 		//ClientHeader contains information that is required for the server to accept the connection, so if this doesn't happen
 		//the client won't be able to connect.
@@ -64,7 +65,7 @@ public class Client {
 	}
 
 	public boolean start() {
-		return true;
+		return connected;
 	}
 
 	public void end(){
@@ -78,7 +79,7 @@ public class Client {
 		}
 
 	}
-	
+
 	/**
 	 * The method used to send messages to the server, this allows for changing recipients by re-requesting keys
 	 * @param message, the chat message to send out
@@ -93,7 +94,7 @@ public class Client {
 		if(encryptKey == null || !recipient.equals(this.recipient)) {
 			//store the message to be sent later
 			storedMessage = new ChatMessage(time, username, message, recipient);
-			
+
 			//try to request the key of the recipient
 			try {
 				requestKey(recipient);
@@ -108,7 +109,7 @@ public class Client {
 		else {
 			//clear out the stored message
 			storedMessage = null;
-			
+
 			//encrypt the message using the public key for the recipient
 			message = encrypt.encrypt(message, encryptKey);
 
@@ -126,27 +127,33 @@ public class Client {
 		KeyRequest request = new KeyRequest(username, target);
 		out.writeObject(request);
 	}
-	
+
 	/**
 	 * A message has been recieved from the server, should decrypt and send to the gui
 	 * @param message, the message recieved from the server
 	 * 
 	 */
 	public void recieved(ChatMessage message){
-		
+
 		//get the message out of the object and decrypt it
 		String text = message.getMessage();
 		message.setMessage(decrypt.decrypt(text, decryptKey));
-		
+
 		//send the newly decrypted message object to the gui
 		clientGUI.printMessage(message);
 	}
-	
+
 	/**
 	 * The server sent a message directly, no need to decrypt it, just send straight to the gui
 	 * @param message, the string to send to the gui
 	 */
 	public void serverMessage(String message) {
+		if (message.equals("This username is already in use, please select a different name.")){
+			connected = false;
+		}
+		else if (message.equals("Logged in, welcome")) {
+			connected = true;
+		}
 		clientGUI.serverMessage(message);
 	}
 
@@ -157,7 +164,7 @@ public class Client {
 	public void setKey(EKey key) throws IOException {
 		//first set the public key as the recieved key
 		encryptKey = key;
-		
+
 		//now encrypt and send it out
 		String cypher = encrypt.encrypt(storedMessage.getMessage(), encryptKey);
 		out.writeObject(new ChatMessage(storedMessage.getTime(), username, cypher, storedMessage.getRecipient()));
@@ -185,13 +192,13 @@ class MessageReceiver extends Thread{
 	ObjectInputStream in;//The input stream
 	Client client;
 	static boolean run;
-	
+
 	public MessageReceiver(ObjectInputStream in,Client client){
 		this.in = in;
 		this.client = client;
 		run = true;
 	}
-	
+
 	public void run() {
 		Object obj;
 		try {
@@ -213,9 +220,15 @@ class MessageReceiver extends Thread{
 		catch(Exception e){
 			//this depends on if the thread is meant to run or not
 			if(run) {
-				//the thread should be running, there's something wrong
-				System.out.println("Message Receiver intterrupted.");
-				e.printStackTrace();
+				if (client.connected) {
+					//the thread should be running, there's something wrong
+					System.out.println("Message Receiver intterrupted.");
+					e.printStackTrace();
+				}
+				else {
+					System.out.println("Failed to connect to server, assumed duplicate username");
+				}
+
 			}
 			else {
 				//the thread shouldn't be running, all is well
