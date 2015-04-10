@@ -99,4 +99,21 @@ public class Tests {
 			fail("Did not reutrn correct Recipient");
 		}
 	}
+	
+	@Test
+	public void testKey(){
+		Key key = new Key(143, 7, 103);
+		
+		if(key.getN() != 143){
+			fail("Returned wrong Nkey");
+		}
+		
+		if(key.getE() != 7){
+			fail("Returned wrong EKey");
+		}
+		
+		if(key.getD() != 103){
+			fail("REturned wrong DKey");
+		}
+	}
 }
